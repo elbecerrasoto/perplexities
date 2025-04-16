@@ -11,9 +11,47 @@ TAX <- "results/absence_presence.tsv"
 REGS <- "regs.tsv"
 ISCAN <- "results/iscan.tsv"
 
-names(tax)
+WEIGHTS <- c(s = 1, i = 2 / 3, d = 2 / 3, t = 1 / 3)
+
 
 # Helpers ----
+
+arch_length <- function(arch) {
+  if (is.na(arch)) {
+    0L
+  } else {
+    length(str_split_1(arch, pattern = "\\|"))
+  }
+}
+
+reduce_arch <- function(arch) {
+  if (is.na(arch)) {
+    return(NA)
+  }
+
+  arch_vec <- str_split_1(arch, pattern = "\\|")
+
+  out <- vector(mode = "character", length = length(arch_vec))
+
+  last_dom <- arch_vec[1]
+  out[1] <- last_dom
+  out_idx <- 1
+
+  for (i in seq_along(arch_vec)) {
+    current <- arch_vec[i]
+    if (current == last_dom) {
+      next
+    } else {
+      out_idx <- out_idx + 1
+      last_dom <- current
+      out[out_idx] <- current
+    }
+  }
+  str_flatten(out[out != ""], collapse = "|")
+}
+
+
+# Main ----
 
 hits <- read_tsv(HITS)
 tax <- read_tsv(TAX)
@@ -23,8 +61,8 @@ iscan <- read_tsv(ISCAN) |>
   group_by(pid) |>
   reframe(length = first(length))
 
-# Unassigned group
-otherG <- length(regs$reg) + 1
+# Unclassified group
+otherG <- 0
 
 # wrangle hits
 hits <- hits |>
@@ -48,7 +86,6 @@ groups_with_members <- map(
   ))
 )
 
-
 str_detect_regs <- function(x, regs) {
   stopifnot("Only vectorized over regexes." = length(x) == 1)
   map_lgl(regs, \(reg) str_detect(x, reg))
@@ -58,7 +95,7 @@ f <- partial(str_detect_regs, regs = regs$reg)
 
 members_with_groups <- map(semicolon_archPF, \(x) which(f(x)))
 ngroups <- map_int(members_with_groups, length)
-stopifnot("Non-mutual exclusive groups" = all(!n_groups > 1))
+stopifnot("Non-mutual exclusive groups" = all(!ngroups > 1))
 
 nzeros <- length(which(ngroups == 0))
 members_with_groups[ngroups == 0] <- as.list(rep(otherG, nzeros))
@@ -67,4 +104,10 @@ stopifnot("Some hits don't have curated group." = all(map_int(members_with_group
 
 hits$curated <- unlist(members_with_groups)
 
-hits$curated
+# Add reduced Groups
+
+# hits25 <- hits25 |>
+#   mutate(archIPR_ext_len = map_int(archIPR_ext, arch_length))
+#
+# hits25 <- hits25 |>
+#   mutate(archIPR_ext_red = map_chr(archIPR_ext, reduce_arch))
