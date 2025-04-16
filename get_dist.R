@@ -106,8 +106,8 @@ hits$curated <- unlist(members_with_groups)
 
 # Add reduced Groups
 
-# hits25 <- hits25 |>
-#   mutate(archIPR_ext_len = map_int(archIPR_ext, arch_length))
-#
-# hits25 <- hits25 |>
-#   mutate(archIPR_ext_red = map_chr(archIPR_ext, reduce_arch))
+hits <- hits |>
+  mutate(
+    ARCH = map_chr(archIPR_ext, reduce_arch),
+    LARCH = map_int(archIPR_ext, arch_length)
+  )
