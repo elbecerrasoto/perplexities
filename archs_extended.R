@@ -73,7 +73,7 @@ out <- neighbors |>
     lengtho_ext = abs(endo_ext - starto_ext) + 1,
     contig = unique(contig),
     locus_tag = locus_tag[neoff == 0],
-    strands = str_flatten(strand, collapse = ""),
+    strands = str_flatten(strand[neoff >= -FLANK & neoff <= +FLANK], collapse = ""),
     archMEM = archMEM[neoff == 0],
     archPF = archPF[neoff == 0],
     archIPR = archIPR[neoff == 0],
@@ -98,6 +98,6 @@ out |>
 mout <- out |>
   ungroup() |>
   select(
-    neID, length_ext, lengtho_ext, strands, archIPR, archIPR_ext
+    neID, length_ext, lengtho_ext, strands, archIPR, archPF, archIPR_ext
   )
 mout |> write_tsv("minit.tsv")
