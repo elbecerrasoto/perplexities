@@ -60,16 +60,16 @@ neighbors <- neighbors |>
 
 out <- neighbors |>
   summarize(
-    neID = paste0(unique(genome), "_", "n", unique(neid)),
     hit = pid[neoff == 0],
+    neID = paste0(unique(hit), ":", unique(genome), ":", unique(neid)),
     gene = gene[neoff == 0],
     product = product[neoff == 0],
     queries = unique(queries),
     start_ext = start[neoff == -FLANK],
-    end_ext   =   end[neoff == +FLANK],
+    end_ext = end[neoff == +FLANK],
     length_ext = abs(end_ext - start_ext) + 1,
     starto_ext = order[neoff == -FLANK],
-    endo_ext   = order[neoff == +FLANK],
+    endo_ext = order[neoff == +FLANK],
     lengtho_ext = abs(endo_ext - starto_ext) + 1,
     contig = unique(contig),
     locus_tag = locus_tag[neoff == 0],
@@ -77,9 +77,9 @@ out <- neighbors |>
     archMEM = archMEM[neoff == 0],
     archPF = archPF[neoff == 0],
     archIPR = archIPR[neoff == 0],
-    archMEM_ext = join_archs(relarchMEM[neoff >= -FLANK & neoff <= +FLANK ]),
-    archPF_ext = join_archs(relarchMEM[neoff >= -FLANK & neoff <= +FLANK ]),
-    archIPR_ext = join_archs(relarchMEM[neoff >= -FLANK & neoff <= +FLANK ])
+    archMEM_ext = join_archs(relarchMEM[neoff >= -FLANK & neoff <= +FLANK]),
+    archPF_ext = join_archs(relarchPF[neoff >= -FLANK & neoff <= +FLANK]),
+    archIPR_ext = join_archs(relarchIPR[neoff >= -FLANK & neoff <= +FLANK])
   )
 
 
@@ -93,4 +93,11 @@ out |>
     archMEM, archPF, archIPR,
     archMEM_ext, archPF_ext, archIPR_ext
   ) |>
-write_tsv("hits_flanks.tsv")
+  write_tsv("hits_flanks.tsv")
+
+mout <- out |>
+  ungroup() |>
+  select(
+    neID, length_ext, lengtho_ext, strands, archIPR, archIPR_ext
+  )
+mout |> write_tsv("minit.tsv")
