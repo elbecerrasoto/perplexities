@@ -6,13 +6,10 @@ suppressPackageStartupMessages({
   library(tidyverse)
 })
 
-argv <- commandArgs(trailingOnly = TRUE)
+ARCHS <- "results/archs.tsv"
+NEIGHBORS <- "results/neighbors.tsv"
 
-NEIGHBORS <- argv[[1]]
-ARCHS <- argv[[2]]
-
-# ARCHS <- "tests/results/archs.tsv"
-# NEIGHBORS <- "tests/results/neighbors.tsv"
+FLANK <- 3
 
 # Helpers ----
 
@@ -50,8 +47,7 @@ neighbors <- read_tsv(NEIGHBORS)
 
 neighbors <- left_join(neighbors, archs, join_by(pid))
 
-
-
+# Expensive ~1 min
 neighbors <- neighbors |>
   group_by(genome, neid) |>
   mutate(
@@ -69,11 +65,11 @@ out <- neighbors |>
     gene = gene[neoff == 0],
     product = product[neoff == 0],
     queries = unique(queries),
-    start_ext = first(start),
-    end_ext = last(end),
+    start_ext = start[neoff == -FLANK],
+    end_ext   =   end[neoff == +FLANK],
     length_ext = abs(end_ext - start_ext) + 1,
-    starto_ext = first(order),
-    endo_ext = last(order),
+    starto_ext = order[neoff == -FLANK],
+    endo_ext   = order[neoff == +FLANK],
     lengtho_ext = abs(endo_ext - starto_ext) + 1,
     contig = unique(contig),
     locus_tag = locus_tag[neoff == 0],
@@ -81,9 +77,9 @@ out <- neighbors |>
     archMEM = archMEM[neoff == 0],
     archPF = archPF[neoff == 0],
     archIPR = archIPR[neoff == 0],
-    archMEM_ext = join_archs(relarchMEM),
-    archPF_ext = join_archs(relarchPF),
-    archIPR_ext = join_archs(relarchIPR)
+    archMEM_ext = join_archs(relarchMEM[neoff >= -FLANK & neoff <= +FLANK ]),
+    archPF_ext = join_archs(relarchMEM[neoff >= -FLANK & neoff <= +FLANK ]),
+    archIPR_ext = join_archs(relarchMEM[neoff >= -FLANK & neoff <= +FLANK ])
   )
 
 
@@ -97,5 +93,4 @@ out |>
     archMEM, archPF, archIPR,
     archMEM_ext, archPF_ext, archIPR_ext
   ) |>
-  format_tsv() |>
-  writeLines(stdout(), sep = "")
+write_tsv("hits_flanks.tsv")
