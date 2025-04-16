@@ -143,3 +143,18 @@ hits <- hits |>
     ARCH = map_chr(archIPR_ext, reduce_arch),
     LARCH = map_int(archIPR_ext, arch_length)
   )
+
+names(hits)
+head(hits$neID)
+
+char_codes <- hits |>
+  group_by(neID) |>
+  reframe(arch = str_split_1(ARCH, pattern = "\\|")) |>
+  mutate(char = one_lettercode(arch)) |>
+  group_by(neID) |>
+  summarize(char = str_flatten(char, collapse = ""))
+
+hits <- left_join(hits, char_codes, join_by(neID))
+
+hits |>
+  write_tsv("ARCH.tsv")
