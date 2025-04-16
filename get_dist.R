@@ -51,6 +51,38 @@ reduce_arch <- function(arch) {
 }
 
 
+one_lettercode <- function(doms) {
+  OFFSET <- 33 # avoids non-printable
+  INT_LEN <- 6
+  LEAD_CHAR <- "IPR"
+
+  pfam_chars <- str_extract(doms, "\\d+")
+  stopifnot("Bad ID." = all(str_length(pfam_chars) == INT_LEN))
+
+  pfam_ints <- as.integer(pfam_chars)
+  stopifnot("Some extracted IDs are non-numeric." = all(!is.na(pfam_ints)))
+
+  # ?intToUtf8
+  # The code points in the surrogate-pair range
+  # 0xD800 to 0xDFFF are prohibited in UTF-8 and so are regarded
+  # as invalid by utf8ToInt and by default by intToUtf8.
+
+  avoid_invalid <- (0xDFFF - 0xD800) + 1
+
+  target_ints <- pfam_ints + OFFSET
+  mask <- target_ints >= 0xD800
+
+  target_ints[mask] <- target_ints[mask] + avoid_invalid
+
+  stopifnot("Unicode points out of range." = all((target_ints) <= 0x10FFFF))
+  pfam_codes <- strsplit(intToUtf8(target_ints), "")[[1]]
+
+  stopifnot("Conversion to utf-8 failed." = length(pfam_codes) == length(doms))
+  names(pfam_codes) <- doms
+  pfam_codes
+}
+
+
 # Main ----
 
 hits <- read_tsv(HITS)
@@ -66,7 +98,7 @@ otherG <- 0
 
 # wrangle hits
 hits <- hits |>
-  filter(lengtho_ext == 7) |>
+  filter(lengtho_ext == 7, !is.na(archIPR_ext)) |>
   distinct(archIPR_ext, .keep_all = TRUE)
 
 hits <- left_join(hits, iscan, join_by(hit == pid))
