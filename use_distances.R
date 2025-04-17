@@ -146,3 +146,7 @@ for (name_phyl_plot in names(phylum_plots)) {
 for (name_curat_plot in names(curated_plots)) {
   ggsave(glue("curated_{name_curat_plot}.pdf"), plot = curated_plots[[name_perp_plot]], width = 8.5, height = 11, units = "in", dpi = 300)
 }
+
+# combine
+system("trash *.pdf", intern = TRUE)
+system("pdfunite hdbclust_perp_* phylum_perp_* curated_perp_* perplexities.pdf", intern = TRUE)
