@@ -135,17 +135,17 @@ for (i in seq_along(perplexity_search)) {
 
 # Plot
 
-for (name_perp_plot in names(perplexity_plots)) {
-  ggsave(glue("hdbclust_{name_perp_plot}.pdf"), plot = perplexity_plots[[name_perp_plot]], width = 8.5, height = 11, units = "in", dpi = 300)
+for (i in seq_along(perplexity_plots)) {
+  ggsave(glue("hdbclust_{i}.pdf"), plot = perplexity_plots[[i]], width = 8.5, height = 11, units = "in", dpi = 300)
 }
 
-for (name_phyl_plot in names(phylum_plots)) {
-  ggsave(glue("phylum_{name_phyl_plot}.pdf"), plot = phylum_plots[[name_perp_plot]], width = 8.5, height = 11, units = "in", dpi = 300)
+for (i in seq_along(phylum_plots)) {
+  ggsave(glue("phylum_{i}.pdf"), plot = phylum_plots[[i]], width = 8.5, height = 11, units = "in", dpi = 300)
 }
 
-for (name_curat_plot in names(curated_plots)) {
-  ggsave(glue("curated_{name_curat_plot}.pdf"), plot = curated_plots[[name_perp_plot]], width = 8.5, height = 11, units = "in", dpi = 300)
+for (i in seq_along(curated_plots)) {
+  ggsave(glue("curated_{i}.pdf"), plot = curated_plots[[i]], width = 8.5, height = 11, units = "in", dpi = 300)
 }
 
 # combine
-system("pdfunite hdbclust_perp_* phylum_perp_* curated_perp_* perplexities.pdf", intern = TRUE)
+system("pdfunite hdbclust_* phylum_* curated_* perplexities.pdf", intern = TRUE)
