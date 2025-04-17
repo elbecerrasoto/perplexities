@@ -3,9 +3,9 @@ library(dbscan)
 library(Rtsne)
 library(irlba) # dependendy of Rtsne
 library(ggthemes)
-library(wesanderson)
 library(glue)
 
+system("trash *.pdf", intern = TRUE)
 
 # Globals ----
 
@@ -32,7 +32,7 @@ plot_tsne <- function(plot_data, ititle, isubtitle) {
   }
 
   ggplot(plot_data) +
-    geom_point(aes(x = mysam(V1), y = mysam(V2), color = fct_lump(cluster, 4)), size = 5, shape = 1) +
+    geom_point(aes(x = mysam(V1), y = mysam(V2), color = fct_lump(cluster, 8)), size = 5, shape = 1) +
     geom_point(aes(x = V1, y = V2), alpha = 1 / 8, size = 0.64) +
     theme_fivethirtyeight(base_size = 18) +
     guides(color = guide_legend(title = NULL)) +
@@ -40,7 +40,7 @@ plot_tsne <- function(plot_data, ititle, isubtitle) {
       axis.text.x = element_blank(),
       axis.text.y = element_blank()
     ) +
-    scale_color_manual(values = wes_palette("AsteroidCity1")) +
+    scale_color_manual(values = paletteer::paletteer_d("ggthemes::few_Light")) +
     labs(
       title = ititle,
       subtitle = isubtitle,
@@ -148,5 +148,4 @@ for (name_curat_plot in names(curated_plots)) {
 }
 
 # combine
-system("trash *.pdf", intern = TRUE)
 system("pdfunite hdbclust_perp_* phylum_perp_* curated_perp_* perplexities.pdf", intern = TRUE)
